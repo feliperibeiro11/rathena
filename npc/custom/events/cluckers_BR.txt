@@ -1,0 +1,117 @@
+//===== rAthena Script =======================================
+//= Cluck! Cluck! Boom!
+//===== By: ==================================================
+//= Keale
+//===== Current Version: =====================================
+//= 1.2a
+//===== Compatible With: =====================================
+//= rAthena Project
+//===== Description: =========================================
+//= Click the chicken and try retrieve the item at a low 
+//= chance. If you fail he will nuke, freeze, stone, 
+//= stun, or make you fall asleep.
+//= The prize is configurable and triggered by the NPC.
+//===== Additional Comments: =================================
+//= 1.0 First release.
+//= 1.1 Using 'switch rand' instead.
+//= 1.2 Cleaned and standardized. [Euphy]
+//= 1.2a Switched 'atcommand' to 'unitskilluseid'.
+//= 1.3 Switched 'unitskilluseid' to 'unitkill'.
+//============================================================
+
+prontera,152,284,4	script	Cluckers	10285,{
+
+	set .@GMAccess,80;	// Nível de GM necessário para acessar o NPC
+
+	if (.startcluck) {
+		specialeffect2 EF_HIT3;
+		switch(rand(15)) {
+			case 0: npctalk "Cluckers : CUCURUCUUUU!!!"; unitkill getcharid(3); skilleffect "NPC_SELFDESTRUCTION",1; emotion ET_HUK; break;
+			case 1: npctalk "Cluckers : Cucurucu!~"; break;
+			case 2: unitkill getcharid(3); skilleffect "NPC_SELFDESTRUCTION",1; break;
+			case 3: sc_start SC_Freeze,10000,0; break;
+			case 4: npctalk "Cluckers : CUCURUCUUUUU!!!"; unitkill getcharid(3); skilleffect "NPC_SELFDESTRUCTION",1; emotion ET_HUK; break;
+			case 5: sc_start SC_Sleep,10000,0; break;
+			case 6: sc_start SC_Stone,10000,0; emotion ET_KIK; break;
+			case 7: npctalk "Cluckers : CUCURUCUUUU!!!"; unitkill getcharid(3); skilleffect "NPC_SELFDESTRUCTION",1; emotion ET_HUK; break;
+			case 8: npctalk "Cluckers : Cucu! CUCURUCU!!"; unitkill getcharid(3); skilleffect "NPC_SELFDESTRUCTION",1; emotion ET_HUK; break;
+			case 9: sc_start SC_Stun,10000,0; break;
+			case 10: sc_start SC_Sleep,10000,0; emotion ET_KIK; break;
+			case 11: npctalk "Cluckers : Cucu! Cucu!"; break;
+			case 12: sc_start SC_Stun,10000,0; break;
+			case 13: unitkill getcharid(3); skilleffect "NPC_SELFDESTRUCTION",1; break;
+			default:
+				if (rand(50) < 4) {
+					npctalk "Cluckers : AU!...........";
+					specialeffect2 EF_SPHERE;
+					announce "[Cluck! Cluck! Boom!] " + strcharinfo(0) + " espremeu o prêmio! Parabéns!",0;
+					getitem $cluck_item_id,$cluck_item_amount;
+					set .startcluck,0;
+				} else {
+					npctalk "Cluckers : Cucu! CUCURUCUUU!!";
+					unitkill getcharid(3); skilleffect "NPC_SELFDESTRUCTION",1;
+				}
+				break;
+		}
+		end;
+	}
+	mes "[Cluckers]";
+	if (getgmlevel() >= .@GMAccess) {
+		mes "Cluc cluc! Cucurucu? ^FF0000~Oi GM " + strcharinfo(0) + ", quer brincar hoje?~^000000";
+		mes "Cluc cluc... CUCURUCU! ^FF0000~Apenas me diga o que fazer!~^000000";
+		next;
+		while(1) switch(select("Iniciar Evento:Verificar Prêmio:Configurar Prêmio:Hoje não Cluckers")) {
+			case 1:
+				mes "[Cluckers]";
+				mes "CUCURUCU! ^FF0000~Com certeza!~^000000";
+				emotion ET_OK;
+				close2;
+				announce "[Cluck! Cluck! Boom!] está prestes a começar em Prontera!",bc_blue;
+				initnpctimer;
+				end;
+			case 2:
+				mes "[Cluckers]";
+				mes "Cluc cluc cluc... Cucurucu! ^FF0000~O prêmio atual é^000000 ^008000"+ $cluck_item_amount +" "+ getitemname($cluck_item_id) +".^000000";
+				next;
+				break;
+			case 3:
+				mes "[Cluckers]";
+				mes "Cluc cluc? Cucurucu??? ^FF0000~Qual deve ser o prêmio para vencer? Por favor, insira o ID.~^000000";
+				input $cluck_item_id;
+				next;
+				mes "[Cluckers]";
+				mes "Cluc? Cucurucu? ^FF0000~Quantos deste item devo dar?~^000000";
+				input $cluck_item_amount;
+				next;
+				mes "[Cluckers]";
+				mes "Cluc cluc..? Cucurucu. ^FF0000~Então, o prêmio é^000000 ^008000"+ $cluck_item_amount +" "+ getitemname($cluck_item_id) +"^000000? ^FF0000Ótimo.~^000000";
+				emotion ET_OK;
+				next;
+				break;
+			case 4:
+				mes "[Cluckers]";
+				mes "Cluc cluc cluc...";
+				close;
+		}
+	}
+	mes "Cluc cluc! Cucurucu?";
+	mes "Cluc....";
+	close;
+
+OnTimer10000:
+	announce "Por favor, vá atrás da fonte se quiser brincar com a galinha maluca!",bc_blue;
+	end;
+OnTimer20000:
+	announce "Cluckers comeu um dos meus itens! Estou com muito medo de recuperá-lo!",bc_blue;
+	end;
+OnTimer30000:
+	announce "Clique na galinha insana e tente espremer o item, se tiver sorte, você ganhará! Você está pronto?",bc_blue;
+	end;
+OnTimer40000:
+	announce "VAI! Clique na galinha para pegar o prêmio!",bc_blue;
+	stopnpctimer;
+	if (!$cluck_item_id) set $cluck_item_id,512;
+	if (!$cluck_item_amount) set $cluck_item_amount,1;
+	set .startcluck,1;
+	end;
+}

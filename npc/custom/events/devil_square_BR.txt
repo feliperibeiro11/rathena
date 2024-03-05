@@ -1,0 +1,283 @@
+//===== rAthena Script =======================================
+//= Devil Square
+//===== By: ==================================================
+//= Kirlein, Stillhard (translation), AnnieRuru (rewrite)
+//===== Current Version: =====================================
+//= 1.0
+//===== Compatible With: =====================================
+//= rAthena Project
+//===== Description: =========================================
+//= Devil Square, based on the event in MU Online.
+//= Defeat three waves of monsters for treasure.
+//===== Additional Comments: =================================
+//= 1.0 First version, edited. [Euphy]
+//============================================================
+
+prontera,156,284,4	script	Devil Square	705,{
+	set .@gm_level, 99; // Nível de GM necessário para iniciar/parar o evento
+
+	mes "[Guardião do Devil Square]";
+	mes "Esta é a entrada para o ^FF0000Devil Square^000000.";
+	mes "Se você falhar ou morrer, a porta se fechará e você precisará esperar até que o evento comece novamente para reentrar.";
+	next;
+	switch(select("Entrar.:Informações.:" + ((getgmlevel() >= .@gm_level) ? "Menu de GM." : "") + ":Cancelar.")) {
+	case 1:
+		if (.start != 1) { // Período de registro
+			mes "[Guardião do Devil Square]";
+			mes "O Devil Square está fechado agora.";
+			mes "Ele abrirá nos seguintes horários:";
+			mes "00:00 , 04:00"; // exiba seus horários aqui
+			mes "08:00 , 12:00";
+			mes "16:00 , 20:00";
+			close;
+		}
+		if (BaseLevel < 70 || Zeny < 20000) { // requisitos
+			mes "[Guardião do Devil Square]";
+			mes "Você não atende aos requisitos para entrar no Devil Square.";
+			mes " ";
+			mes "Requisitos:";
+			mes " - Base Level 70";
+			mes " - Taxa de inscrição 20,000z";
+			close;
+		}
+		Zeny -= 20000;
+		announce strcharinfo(0)+" entrou no Devil Square.", bc_npc;
+		percentheal 100,100;
+		warp "pvp_n_2-4",90,123;
+		close;
+	case 2:
+		mes "[Guardião do Devil Square]";
+		mes "Dentro, você enfrentará 9 ondas de monstros. Os monstros ficarão mais fortes a cada onda.";
+		next;
+		mes "[Guardião do Devil Square]";
+		mes "Se você derrotar todos os inimigos, terá a oportunidade de abrir 10 Baús do tesouro com itens, equipamentos e cartas raras dentro!";
+		close;
+	case 3:
+		mes "[Guardião do Devil Square]";
+		switch (.start) { // estados do evento
+			case 0: mes "O Devil Square ainda não começou."; break;
+			case 1: mes "O Devil Square está atualmente aceitando participantes."; break;
+			case 2: mes "O evento Devil Square está em andamento na Rodada "+ .round +" com "+ .mob +" monstros restantes."; break;
+		}
+		next;
+		switch(select("Iniciar evento.:Parar evento.:Cancelar.")) {
+		case 1:
+			mes "[Guardião do Devil Square]";
+			if (.start)
+				mes "O Devil Square já começou.";
+			else {
+				mes "Iniciando Devil Square...";
+				donpcevent strnpcinfo(0)+"::OnStartEvent";
+			}
+			close;
+		case 2:
+			mes "[Guardião do Devil Square]";
+			if (!.start)
+				mes "O Devil Square ainda não começou.";
+			else {
+				mes "Parando o Devil Square...";
+				donpcevent strnpcinfo(0)+"::OnStopEvent";
+			}
+			close;
+		case 3:
+			break;
+		}
+		break;
+	case 4:
+		break;
+	}
+	mes "[Guardião do Devil Square]";
+	mes "Farewell.";
+	close;
+
+OnStartEvent:
+OnClock0000:
+OnClock0400:
+OnClock0800:
+OnClock1200:
+OnClock1600:
+OnClock2000:
+	.start = 1;
+	disablenpc "Sair"; // do npc/warps/pvp.txt
+	disablenpc "Sair";
+	mapannounce "pvp_n_2-4","O Devil Square está agora fechado.", bc_map;
+	getmapxy .@map$, .@x, .@y, BL_NPC;
+	mapwarp "pvp_n_2-4", .@map$, .@x, .@y;
+	killmonsterall "pvp_n_2-4";
+	announce "O Devil Square está ABERTO. O evento começará em 5 minutos.", bc_all;
+	sleep 60000;
+	announce "O Devil Square começará em 4 minutos.", bc_all;
+	sleep 60000;
+	announce "O Devil Square começará em 3 minutos.", bc_all;
+	sleep 60000;
+	announce "O Devil Square começará em 2 minutos.", bc_all;
+	sleep 60000;
+	announce "O Devil Square começará em 1 minuto.", bc_all;
+	sleep 60000;
+	announce "O Devil Square começou!", bc_all;
+	if ( !getmapusers("pvp_n_2-4") )
+		goto OnStopEvent;
+	.start = 2;
+	.round = 1;
+	.mob = 150;
+	areamonster "pvp_n_2-4",99,133,88,122,"[DS] SOLDADO ESQUELETO",1028,25,strnpcinfo(0)+"::OnDevilDead";
+	areamonster "pvp_n_2-4",51,122,64,121,"[DS] ARQUEIRO ORC",1189,25,strnpcinfo(0)+"::OnDevilDead";
+	areamonster "pvp_n_2-4",99,90,99,51,"[DS] HOMEM DA AREIA",1165,25,strnpcinfo(0)+"::OnDevilDead";
+	areamonster "pvp_n_2-4",116,122,144,120,"[DS] ESQUELETO ARQUEIRO",1016,25,strnpcinfo(0)+"::OnDevilDead";
+	areamonster "pvp_n_2-4",100,144,99,166,"[DS] MINOROUS",1149,25,strnpcinfo(0)+"::OnDevilDead";
+	areamonster "pvp_n_2-4",101,126,98,115,"[DS] REQUIEM",1164,25,strnpcinfo(0)+"::OnDevilDead";
+	end;
+
+OnDevilDead:
+	.mob--;
+	if ( .mob == 25 || .mob == 5 )
+		announce "Devil Square: "+ .mob +" monstros restantes na rodada 1.", bc_map;
+	else if ( .mob <= 0 ) {
+		announce "O Devil Square está entrando no 2° Round...", bc_map;
+		goto OnDevil2;
+	}
+	end;
+
+OnDevil2:
+	.round = 2;
+	.mob = 210;
+	areamonster "pvp_n_2-4",99,133,88,122,"[DS] GÁRGULA",1253,35,strnpcinfo(0)+"::OnDevilDead2";
+	areamonster "pvp_n_2-4",51,122,64,121,"[DS] ALARME",1193,35,strnpcinfo(0)+"::OnDevilDead2";
+	areamonster "pvp_n_2-4",99,90,99,51,"[DS] ORC ALTO",1213,35,strnpcinfo(0)+"::OnDevilDead2";
+	areamonster "pvp_n_2-4",116,122,144,120,"[DS] INJUSTIÇA",1257,35,strnpcinfo(0)+"::OnDevilDead2";
+	areamonster "pvp_n_2-4",100,144,99,166,"[DS] MIMIC",1191,35,strnpcinfo(0)+"::OnDevilDead2";
+	areamonster "pvp_n_2-4",101,126,98,115,"[DS] ESPECTRO",1192,35,strnpcinfo(0)+"::OnDevilDead2";
+	end;
+
+OnDevilDead2:
+	.mob--;
+	if ( .mob == 25 || .mob == 5 )
+		announce "Devil Square: "+ .mob +" monstros restantes na rodada 2.", bc_map;
+	else if ( .mob <= 0 ) {
+		announce "O Devil Square está entrando no 3° Round...", bc_map;
+		goto OnDevil3;
+	}
+	end;
+
+OnDevil3:
+	.round = 3;
+	.mob = 214;
+	areamonster "pvp_n_2-4",0,0,0,0,"[DS] ANOLIAN",1206,35,strnpcinfo(0)+"::OnDevilDead3";
+	areamonster "pvp_n_2-4",0,0,0,0,"[DS] ERRANTE",1208,35,strnpcinfo(0)+"::OnDevilDead3";
+	areamonster "pvp_n_2-4",0,0,0,0,"[DS] DEVIRUCHI",1109,35,strnpcinfo(0)+"::OnDevilDead3";
+	areamonster "pvp_n_2-4",0,0,0,0,"[DS] CLOWN",1131,35,strnpcinfo(0)+"::OnDevilDead3";
+	areamonster "pvp_n_2-4",0,0,0,0,"[DS] ESPECTRO",1192,35,strnpcinfo(0)+"::OnDevilDead2";
+	areamonster "pvp_n_2-4",0,0,0,0,"[DS] INJUSTIÇADO",1257,35,strnpcinfo(0)+"::OnDevilDead2";
+	areamonster "pvp_n_2-4",0,0,0,0,"[DS] Orc Herói",1087,1,strnpcinfo(0)+"::OnDevilDead3";
+	areamonster "pvp_n_2-4",0,0,0,0,"[DS] Ilusão das Trevas",1302,1,strnpcinfo(0)+"::OnDevilDead3";
+	areamonster "pvp_n_2-4",0,0,0,0,"[DS] Senhor dos Orcs",1190,1,strnpcinfo(0)+"::OnDevilDead3";
+	areamonster "pvp_n_2-4",0,0,0,0,"[DS] Senhor das Trevas",1272,1,strnpcinfo(0)+"::OnDevilDead3";
+	end;
+
+OnDevilDead3:
+	.mob--;
+	if ( .mob == 25 || .mob == 5 )
+		announce "Devil Square: "+ .mob +" monstros restantes na rodada final.", bc_map;
+	else if ( .mob <= 0 ) {
+		announce "O Devil Square está entrando no 4° Round...", bc_map;
+		goto OnDevil4;
+	}
+	end;
+
+OnDevil4:
+	.round = 4;
+	.mob = 217;
+	areamonster "pvp_n_2-4",0,0,0,0,"[DS] MINOROUS",1149,35,strnpcinfo(0)+"::OnDevilDead3";
+	areamonster "pvp_n_2-4",0,0,0,0,"[DS] Bafomé Jr",1101,35,strnpcinfo(0)+"::OnDevilDead3";
+	areamonster "pvp_n_2-4",0,0,0,0,"[DS] Árvore Maldita",1503,35,strnpcinfo(0)+"::OnDevilDead3";
+	areamonster "pvp_n_2-4",0,0,0,0,"[DS] Am Mut",1301,35,strnpcinfo(0)+"::OnDevilDead3";
+	areamonster "pvp_n_2-4",0,0,0,0,"[DS] Aliot",1736,35,strnpcinfo(0)+"::OnDevilDead2";
+	areamonster "pvp_n_2-4",0,0,0,0,"[DS] Alicel",1735,35,strnpcinfo(0)+"::OnDevilDead2";
+	areamonster "pvp_n_2-4",0,0,0,0,"[DS] Bafomé",1039,4,strnpcinfo(0)+"::OnDevilDead3";
+	areamonster "pvp_n_2-4",0,0,0,0,"[DS] General Tartaruga",1312,1,strnpcinfo(0)+"::OnDevilDead3";
+	areamonster "pvp_n_2-4",0,0,0,0,"[DS] Amon Ra",1511,1,strnpcinfo(0)+"::OnDevilDead3";
+	areamonster "pvp_n_2-4",0,0,0,0,"[DS] Kiel-D-01",1734,1,strnpcinfo(0)+"::OnDevilDead3";
+	end;
+
+OnDevilDead4:
+	.mob--;
+	if ( .mob == 25 || .mob == 5 )
+		announce "Devil Square: "+ .mob +" monstros restantes na rodada final.", bc_map;
+	else if ( .mob <= 0 ) {
+		announce "O Devil Square está entrando no 5° Round...", bc_map;
+		goto OnDevil4;
+	}
+	end;
+
+OnDevil5:
+	.round = 5;
+	.mob = 217;
+	areamonster "pvp_n_2-4",99,133,88,122,"[DS] MINOROUS",1149,35,strnpcinfo(0)+"::OnDevilDead3";
+	areamonster "pvp_n_2-4",51,122,64,121,"[DS] Bafomé Jr",1101,35,strnpcinfo(0)+"::OnDevilDead3";
+	areamonster "pvp_n_2-4",99,90,99,51,"[DS] Árvore Maldita",1503,35,strnpcinfo(0)+"::OnDevilDead3";
+	areamonster "pvp_n_2-4",116,122,144,120,"[DS] Am Mut",1301,35,strnpcinfo(0)+"::OnDevilDead3";
+	areamonster "pvp_n_2-4",101,126,98,115,"[DS] Aliot",1736,35,strnpcinfo(0)+"::OnDevilDead2";
+	areamonster "pvp_n_2-4",116,122,144,120,"[DS] Alicel",1735,35,strnpcinfo(0)+"::OnDevilDead2";
+	areamonster "pvp_n_2-4",97,68,57,122,"[DS] Bafomé",1039,4,strnpcinfo(0)+"::OnDevilDead3";
+	areamonster "pvp_n_2-4",99,134,121,122,"[DS] General Tartaruga",1312,1,strnpcinfo(0)+"::OnDevilDead3";
+	areamonster "pvp_n_2-4",104,21,155,121,"[DS] Amon Ra",1511,1,strnpcinfo(0)+"::OnDevilDead3";
+	areamonster "pvp_n_2-4",50,79,56,168,"[DS] Kiel-D-01",1734,1,strnpcinfo(0)+"::OnDevilDead3";
+	end;
+
+OnDevilDead5:
+	.mob--;
+	if ( .mob == 25 || .mob == 5 )
+		announce "Devil Square: "+ .mob +" monstros restantes na rodada final.", bc_map;
+	else if ( .mob <= 0 ) {
+		announce "O Devil Square está entrando no 6° Round...", bc_map;
+		goto OnDevil4;
+	}
+	end;
+	
+OnDevil9:
+	.round = 9;
+	.mob = 10;
+	monster "pvp_n_2-4",153,121,"Treasure Chest",1324,1,strnpcinfo(0)+"::OnTreasureDead";
+	monster "pvp_n_2-4",117,121,"Treasure Chest",1328,1,strnpcinfo(0)+"::OnTreasureDead";
+	monster "pvp_n_2-4",77,121,"Treasure Chest",1332,1,strnpcinfo(0)+"::OnTreasureDead";
+	monster "pvp_n_2-4",43,121,"Treasure Chest",1336,1,strnpcinfo(0)+"::OnTreasureDead";
+	monster "pvp_n_2-4",99,172,"Treasure Chest",1340,1,strnpcinfo(0)+"::OnTreasureDead";
+	monster "pvp_n_2-4",99,145,"Treasure Chest",1344,1,strnpcinfo(0)+"::OnTreasureDead";
+	monster "pvp_n_2-4",99,90,"Treasure Chest",1348,1,strnpcinfo(0)+"::OnTreasureDead";
+	monster "pvp_n_2-4",99,26,"Treasure Chest",1352,1,strnpcinfo(0)+"::OnTreasureDead";
+	monster "pvp_n_2-4",99,50,"Treasure Chest",1356,1,strnpcinfo(0)+"::OnTreasureDead";
+	monster "pvp_n_2-4",99,121,"Treasure Chest",1360,1,strnpcinfo(0)+"::OnTreasureDead";
+	end;
+
+OnTreasureDead:
+	.mob--;
+	announce "Devil Square: "+ strcharinfo(0) +" abriu o Treasure Chest no Devil Square.", bc_all;
+	if ( .mob <= 0 )
+		goto OnStopEvent;
+	end;
+
+OnStopEvent:
+	killmonsterall "pvp_n_2-4";
+	enablenpc "Sair"; // do npc/warps/pvp.txt
+	enablenpc "Sair";
+	.start = .round = .mob = 0;
+	end;
+}
+
+pvp_n_2-4,99,119,4	script	Sair	705,{
+	mes "[Saída]";
+	mes "Adeus.";
+	close2;
+	warp "SavePoint",0,0;
+	end;
+}
+
+pvp_n_2-4	mapflag	nowarp
+pvp_n_2-4	mapflag	nowarpto
+pvp_n_2-4	mapflag	noteleport
+pvp_n_2-4	mapflag	monster_noteleport
+pvp_n_2-4	mapflag	nosave	SavePoint
+pvp_n_2-4	mapflag	nomemo
+pvp_n_2-4	mapflag	nobranch
+pvp_n_2-4	mapflag	nopenalty
+pvp_n_2-4	mapflag	noicewall
