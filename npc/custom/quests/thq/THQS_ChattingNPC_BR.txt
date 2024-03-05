@@ -1,0 +1,99 @@
+//===== rAthena Script =======================================
+//= Treasure Hunter Quests
+//===== By: ==================================================
+//= Fredzilla
+//===== Current Version: =====================================
+//= 1.0
+//===== Compatible With: =====================================
+//= rAthena Project
+//===== Description: =========================================
+//= Start for Treasure hunter quests
+//===== Additional Comments: =================================
+//= Event_THQS - Used to check if you have already registered
+//= #Treasure_Token - used to keep track of tokens
+//============================================================
+
+// Bandeiras de Entrada
+yuno,48,101,6	script	Notice	722,{
+	mes "^FF0000[ Casa da Guilda de Caçadores de Tesouros ]^000000";
+	mes " ";
+	mes "Bem-vindo à Casa da Guilda de Caçadores de Tesouros.";
+	mes "Sinta-se à vontade para dar uma olhada";
+	mes "e sinta-se à vontade para se tornar um membro, se desejar.";
+	mes " ";
+	mes "Para inscrições de membros, por favor, fale com Keegan";
+	mes "subindo as escadas e no final do corredor.";
+	close;
+}
+
+// Garota Salva
+yuno_in01,32,178,3	script	Ahlma	94,{
+	mes "[Ahlma]";
+	if (Event_THQS == 0) goto N_Membro;
+	mes "Bem-vindo à Guilda de Caçadores de Tesouros.";
+	mes "Como posso ajudar você?";
+	next;
+	menu "Salvar",-,"Sair",N_Sair;
+	mes "[Ahlma]";
+	mes "Ok, salvo. Obrigada ~ Até logo~";
+	savepoint "yuno_in01",34,176;
+	close;
+N_Sair:
+	mes "[Ahlma]";
+	mes "Bem, se você acha que está seguro, bom para você.";
+	close;
+N_Membro:
+	mes "Desculpe, apenas para membros.";
+	close;
+}
+
+// Garota Máscara de Sorriso Aposentada
+yuno_in01,33,162,3	script	Smile Helper	92,{
+	mes "[Garota do Sorriso]";
+	mes "Ah, cara... Eu estou tão cansada de";
+	mes "trocar máscaras do Sr. Sorriso por tranqueiras.";
+	mes " ";
+	mes "Você me pede uma e você vai se ver 10 quilos mais leve!";
+	close;
+}
+
+// Assassina Inútil
+yuno_in01,22,162,6	script	Female Assasin	725,{
+	mes "[Sharlet]";
+	if (Event_THQS > 0) goto N_Membro;
+	mes "Hmm, desculpe, eu não vou perder meu tempo falando com você se nem mesmo é um membro!";
+	close;
+N_Membro:
+	set @TEMP, rand(1,2);
+	if (@TEMP == 1) goto N_Chat1;
+	if (@TEMP == 2) goto N_Chat2;
+	mes "Como você está lendo isso???";
+	mes "Bem, a menos que você esteja lendo o código :)";
+	close;
+N_Chat1:
+	mes "Ahh, seja bem-vindo colega Caçador de Tesouros "+strcharinfo(0)+".";
+	mes "Você ouviu falar daquele homem corajoso que foi sozinho para Glast Heim?! Ele deve ser louco.";
+	close;
+N_Chat2:
+	mes ""+strcharinfo(0)+" você não tem algo melhor para fazer? Como uma missão.";
+	close;
+}
+
+// Outro Membro Inútil
+yuno_in01,25,162,6	script	Female Wizard	123,{
+	mes "[Sasha]";
+	if (Event_THQS > 0) goto N_Membro;
+	mes "Hmm, desculpe, eu não vou perder meu tempo falando com você se nem mesmo é um membro!";
+	close;
+N_Membro:
+	set @TEMP, rand(2);
+	if (@TEMP == 1) goto N_Chat;
+	mes "Ahh, seja bem-vindo colega Caçador de Tesouros "+strcharinfo(0)+".";
+	mes "Você ouviu falar daquele homem bode que anda por aí nas árvores?";
+	mes " ";
+	mes "Aparentemente, o nome dele é Baphomet e ele está correndo por aí na Floresta do Labirinto, fora de Prontera, há um bom tempo agora.";
+	close;
+N_Chat:
+	mes ""+strcharinfo(0)+" você não tem algo melhor para fazer? Como uma missão.";
+	close;
+}

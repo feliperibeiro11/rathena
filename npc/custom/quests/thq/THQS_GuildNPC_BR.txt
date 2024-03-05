@@ -1,0 +1,86 @@
+//===== rAthena Script =======================================
+//= Treasure Hunter Quests
+//===== By: ==================================================
+//= Fredzilla
+//===== Current Version: =====================================
+//= 1.0
+//===== Compatible With: =====================================
+//= rAthena Project
+//===== Description: =========================================
+//= Start for Treasure hunter quests
+//===== Additional Comments: =================================
+//= Event_THQS - Used to check if you have already registered
+//= #Treasure_Token - used to keep track of tokens
+//============================================================
+
+yuno_in01,124,164,6	script	Líder da Guilda	108,{
+	mes "[Keegan]";
+	mes "O que te traz aqui? Tem algo a dizer?";
+	next;
+	menu "Quero ser um Caçador de Tesouros",-,"Aceitar uma Nova Missão.",N_NQuest,"Leve-me para a Loja Oficial.",N_OShop,"Deixe pra lá.",N_NVM;
+	if(Event_THQS==1) goto N_AlreadyReg;
+	mes "[Keegan]";
+	mes "Bem "+strcharinfo(0)+" se você quer ser um Caçador de Tesouros, primeiro precisa.";
+	mes " ";
+	mes "^FF00001.^000000 Pagar ^FF000025.000z^000000 pelo treinamento básico e pela prova de ser um membro.";
+	mes " ";
+	mes "Hmm... Bem, isso é tudo que você precisa fazer. Hahaha.";
+	next;
+	menu "Pagar ^FF000025.000z^000000.",-,"Isso está muito caro!!",N_HighPrice;
+	if (Zeny < 25000) goto N_NoZeny;
+	set Zeny,Zeny-25000;
+	//getitem 7950, 1;
+	//getitem 7951, 1;
+	set Event_THQS,1;
+	mes "[Keegan]";
+	mes "Parabéns!";
+	emotion ET_CONGRATULATION;
+	next;
+	mes "[Keegan]";
+	mes "Bem-vindo à Guilda dos Caçadores de Tesouros.";
+	mes "Agora você pode aceitar uma Missão de Caça ao Tesouro quando quiser.";
+	close;
+N_NoZeny:
+	mes "[Keegan]";
+	mes "Hmm, parece que você não tem ^FF000025.000z^000000 "+strcharinfo(0)+". Volte quando tiver.";
+	close;
+N_HighPrice:
+	mes "[Keegan]";
+	mes "Bem, se você não pode pagar ^FF000025.000z^000000, você não deveria ser um Caçador de Tesouros ainda.";
+	close;
+N_AlreadyReg:
+	mes "[Keegan]";
+	mes "Ha ha ha... você já é um membro.";
+	close;
+N_NQuest:
+	if (Event_THQS!=1) goto A_NeedReg;
+	mes "[Keegan]";
+	mes "Bem "+strcharinfo(0)+" se deseja aceitar uma missão, vá falar com o outro Caçador de Tesouros na outra sala ali.";
+	close;
+A_NeedReg:
+	mes "[Keegan]";
+	mes "Desculpe, mas você precisa ser membro da Guilda dos Caçadores de Tesouros se quiser aceitar uma missão.";
+	mes " ";
+	mes "Além disso, agora que você é um membro, sinta-se à vontade para usar nossas lojas sempre que quiser. Todas estão localizadas neste andar.";
+	mes " ";
+	mes "Temos também uma loja exclusiva para membros, onde usamos pequenos diamantes metálicos chamados Tokens de Caçador de Tesouros para trocar por itens raros.";
+	mes " ";
+	mes "Você terá até acesso ao nosso exclusivo Calabouço Pessoal.";
+	close;
+N_OShop:
+	if (Event_THQS!=1) goto N_NeedMem;
+	mes "[Keegan]";
+	mes "Sim "+strcharinfo(0)+" Vou te levar à nossa loja imediatamente!";
+	next;
+	warp "prt_in",166,171;
+	close;
+	end;
+N_NeedMem:
+	mes "[Keegan]";
+	mes "Desculpe, apenas membros podem visitar nossa loja privada.";
+	close;
+N_NVM:
+	mes "[Keegan]";
+	mes "Certo, volte quando tiver tempo livre.";
+	close;
+}
